@@ -7,7 +7,7 @@ import { getToken } from '@/utils/auth'
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API, // url = base url + request url
   // withCredentials: true, // send cookies when cross-domain requests
-  timeout: 5000 // request timeout
+  timeout: 120000 // request timeout
 })
 
 // request interceptor
@@ -46,7 +46,7 @@ service.interceptors.response.use(
     const res = response.data
 
     // if the custom code is not 20000, it is judged as an error.
-    if (res.code !== 20000) {
+    if (res.code !== 0) {
       Message({
         message: res.message || 'Error',
         type: 'error',
@@ -64,6 +64,29 @@ service.interceptors.response.use(
           store.dispatch('user/resetToken').then(() => {
             location.reload()
           })
+        })
+      }
+      if (res.code === -1) {
+        Message({
+          message: '会话超时，请重新登录！',
+          type: 'error'
+        })
+        var curPermission = {
+          admin: false,
+          infor_edit: false,
+          approve: false
+        }
+        store.commit(
+          'user/SET_INFOR_PERMISSION',
+          curPermission
+        )
+        store.commit(
+          'app/SET_CUR_USER_PERMISSION',
+          curPermission
+        )
+        store.commit('app/SET_LANGUAGES', [])
+        store.dispatch('user/resetUser').then(() => {
+          location.href = '/'
         })
       }
       return Promise.reject(new Error(res.message || 'Error'))

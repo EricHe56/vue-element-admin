@@ -88,11 +88,11 @@ export default {
     }
   },
   mounted() {
-    this.init()
+    // this.init()
   },
   activated() {
     if (window.tinymce) {
-      this.initTinymce()
+      // this.initTinymce()
     }
   },
   deactivated() {

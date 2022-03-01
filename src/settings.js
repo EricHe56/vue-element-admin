@@ -1,5 +1,10 @@
+const version = require('../public/js/version')
 module.exports = {
-  title: 'Vue Element Admin',
+  title: 'Vue Element Admin v-' + version.msg,
+  // title: 'Vue Element Admin',
+
+  version: version.msg,
+  languages: [],
 
   /**
    * @type {boolean} true | false

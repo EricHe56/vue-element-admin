@@ -6,15 +6,19 @@
     <a class="document-btn" target="_blank" href="https://panjiachen.gitee.io/vue-element-admin-site/zh/">国内文档</a>
     <dropdown-menu class="document-btn" :items="articleList" title="系列文章" />
     <a class="document-btn" target="_blank" href="https://panjiachen.github.io/vue-element-admin-site/zh/job/">内推招聘</a>
+    <editor
+      :init="tinymceInit"
+    />
   </div>
 </template>
 
 <script>
+import Editor from '@tinymce/tinymce-vue'
 import DropdownMenu from '@/components/Share/DropdownMenu'
 
 export default {
   name: 'Documentation',
-  components: { DropdownMenu },
+  components: { DropdownMenu, editor: Editor },
   data() {
     return {
       articleList: [
@@ -27,7 +31,51 @@ export default {
         { title: '优雅的使用 icon', href: 'https://juejin.im/post/59bb864b5188257e7a427c09' },
         { title: 'webpack4（上）', href: 'https://juejin.im/post/59bb864b5188257e7a427c09' },
         { title: 'webpack4（下）', href: 'https://juejin.im/post/5b5d6d6f6fb9a04fea58aabc' }
-      ]
+      ],
+      tinymceInit: {
+        height: 500,
+        width: '100%',
+        language: 'zh_CN',
+        menubar: false,
+        plugins: [
+          'advlist anchor autolink autosave charmap code codesample directionality',
+          'emoticons fullscreen help hr image imagetools importcss insertdatetime',
+          'link lists media nonbreaking noneditable pagebreak preview print quickbars',
+          'save searchreplace table template textpattern toc visualblocks visualchars wordcount'
+        ],
+        toolbar:
+          'undo redo | formatselect | bold italic backcolor | ' +
+          'alignleft aligncenter alignright alignjustify | ' +
+          'bullist numlist outdent indent | removeformat | help | ' +
+          'anchor | restoredraft | code | codesample | ltr rtl | ' +
+          'emoticons | fullscreen | hr | image | insertdatetime | link | media | ' +
+          'nonbreaking | pagebreak | preview | print | searchreplace | ' +
+          'table | template | toc | visualchars | ' +
+          '',
+        toc_depth: 3,
+        powerpaste_word_import: 'propmt', // 参数可以是propmt, merge, clear，效果自行切换对比
+        powerpaste_html_import: 'propmt', // propmt, merge, clear
+        powerpaste_allow_local_images: true,
+        paste_data_images: true,
+        images_upload_handler: function(blobInfo, success, failure) {
+          // 这个函数主要处理word中的图片，并自动完成上传；
+          // ajaxUpload是自己定义的一个函数；在回调中，记得调用success函数，传入上传好的图片地址；
+          // blobInfo.blob() 得到图片的file对象；
+          this.ajaxUpload(blobInfo.blob()).then((data) => {
+            // 上传成功后，调用success函数传入图片地址
+            success(data.uploadedImageUrl)
+          })
+        }
+        // tinymce的其他配置参数
+      }
+
+    }
+  },
+  methods: {
+    ajaxUpload() {
+      return Promise.resolve({
+        uploadedImageUrl: 'https://avatars.githubusercontent.com/u/31344600?v=4'
+      })
     }
   }
 }

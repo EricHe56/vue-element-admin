@@ -1,5 +1,5 @@
-import { login, logout, getInfo } from '@/api/user'
-import { getToken, setToken, removeToken } from '@/utils/auth'
+import { login, cookie_login, logout, getInfo } from '@/api/user'
+import { getToken, setToken, removeToken, getSkey, getOpenId, getUID, getExpire } from '@/utils/auth'
 import router, { resetRouter } from '@/router'
 
 const state = {
@@ -7,7 +7,12 @@ const state = {
   name: '',
   avatar: '',
   introduction: '',
-  roles: []
+  roles: [],
+  inforPermission: {
+    admin: false,
+    infor_edit: false,
+    approve: false
+  }
 }
 
 const mutations = {
@@ -25,15 +30,33 @@ const mutations = {
   },
   SET_ROLES: (state, roles) => {
     state.roles = roles
+  },
+  SET_INFOR_PERMISSION: (state, inforPermission) => {
+    state.inforPermission = inforPermission
   }
 }
 
 const actions = {
   // user login
   login({ commit }, userInfo) {
-    const { username, password } = userInfo
+    const { username, password, auth_code } = userInfo
     return new Promise((resolve, reject) => {
-      login({ username: username.trim(), password: password }).then(response => {
+      login({ username: username.trim(), password: password, auth_code: auth_code }).then(response => {
+        const { data } = response
+        commit('SET_TOKEN', data.token)
+        setToken(data.token)
+        resolve()
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
+
+  // user cookie_login
+  cookie_login({ commit }, userInfo) {
+    // const { skey, open_id, uid, expire } = userInfo
+    return new Promise((resolve, reject) => {
+      cookie_login({ skey: getSkey(), open_id: getOpenId(), uid: getUID(), expire: Number(getExpire()) }).then(response => {
         const { data } = response
         commit('SET_TOKEN', data.token)
         setToken(data.token)
@@ -54,17 +77,17 @@ const actions = {
           reject('Verification failed, please Login again.')
         }
 
-        const { roles, name, avatar, introduction } = data
+        const { name, avatar, introduction, roles, permission } = data
 
         // roles must be a non-empty array
         if (!roles || roles.length <= 0) {
           reject('getInfo: roles must be a non-null array!')
         }
-
-        commit('SET_ROLES', roles)
         commit('SET_NAME', name)
         commit('SET_AVATAR', avatar)
         commit('SET_INTRODUCTION', introduction)
+        commit('SET_ROLES', roles)
+        commit('SET_INFOR_PERMISSION', permission)
         resolve(data)
       }).catch(error => {
         reject(error)
@@ -77,6 +100,8 @@ const actions = {
     return new Promise((resolve, reject) => {
       logout(state.token).then(() => {
         commit('SET_TOKEN', '')
+        commit('SET_NAME', '')
+        commit('SET_AVATAR', '')
         commit('SET_ROLES', [])
         removeToken()
         resetRouter()
@@ -98,6 +123,19 @@ const actions = {
       commit('SET_TOKEN', '')
       commit('SET_ROLES', [])
       removeToken()
+      resolve()
+    })
+  },
+
+  // reset User
+  resetUser({ commit }) {
+    return new Promise(resolve => {
+      commit('SET_TOKEN', '')
+      commit('SET_NAME', '')
+      commit('SET_AVATAR', '')
+      commit('SET_ROLES', [])
+      removeToken()
+      resetRouter()
       resolve()
     })
   },
@@ -129,3 +167,4 @@ export default {
   mutations,
   actions
 }
+

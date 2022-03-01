@@ -5,11 +5,58 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="renderer" content="webkit">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <script src="<%= BASE_URL %>js/tinymce/tinymce.min.js"></script>
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
     <title><%= webpackConfig.name %></title>
   </head>
   <body>
     <div id="app"></div>
     <!-- built files will be auto injected -->
+    <script>
+      function getUrlVars() {
+        var vars = {};
+        var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+            vars[key] = value;
+        });
+        return vars;
+      }
+      var vars = getUrlVars()
+      const prod_oss_domain = 'prod-oss.you5.cc'
+      const stagin_oss_domain = 'staging-oss.you5.cc'
+      const dev_oss_domain = 'dev.you5.cc'
+      var oss_app_id = 'oss-api-id'
+      var redirectUrl_prod = encodeURIComponent('https://'+prod_oss_domain+'/web-admin/index.html') // prod
+      var redirectUrl_test = encodeURIComponent('http://'+stagin_oss_domain+'/web-admin/') // test, staging
+      var redirectUrl_dev  = encodeURIComponent('http://'+dev_oss_domain+'/web-admin/') //dev
+      var redirectUrl = redirectUrl_prod
+      if (typeof vars.auth_code === 'undefined') {
+        if (window.location.host === 'dev.you5.cc') {
+          redirectUrl = redirectUrl_test
+        }
+        if (window.location.host === 'localhost:9528') {
+          redirectUrl = redirectUrl_dev
+        }
+        if (window.location.host !== stagin_oss_domain && window.location.host !== prod_oss_domain) {
+          var url = 'https://'+stagin_oss_domain+'/usrv/user/oauth2/authorize?redirect_uri=' + redirectUrl + '&app_id='+oss_app_id+'&type=app_admin&scope=get_user_auth&state=STATE&account_id=' + oss_app_id
+          window.open(url + '&t=' + new Date().getTime(), '_self')
+        }else{
+          // auto reload new version
+          if (typeof vars.t === 'undefined') {
+            var url = window.location.href
+            if (url.includes('?')) {
+              window.open(url + '&t=' + new Date().getTime(), '_self')
+            }else{
+              window.open(url + '?t=' + new Date().getTime(), '_self')
+            }
+          }
+          document.cookie = 'vue_admin_template_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+        }
+
+      }
+      // var script = document.createElement("script")
+      // script.type = "text/javascript"
+      // script.src = "<%= BASE_URL %>js/version.js" + '?t=' + new Date().getTime()
+      // document.getElementsByTagName("head")[0].appendChild(script)
+    </script>
   </body>
 </html>
