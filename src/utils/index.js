@@ -355,3 +355,43 @@ export function removeClass(ele, cls) {
     ele.className = ele.className.replace(reg, ' ')
   }
 }
+
+export function hexToB64(strHex) {
+  const strDict = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz#$'
+  let strBase2 = ''
+  // get current hex char in bits
+  for (const i in strHex.split('')) {
+    strBase2 = strBase2 + ('0000' + parseInt(strHex[i], 16).toString(2)).slice(-4)
+  }
+  while ((strBase2.length % 6) !== 0) {
+    strBase2 = '0' + strBase2
+  }
+  let strB64 = ''
+  for (let i = 0; strBase2.length >= (i * 6 + 6); i++) {
+    const strBit6 = strBase2.slice(i * 6, i * 6 + 6)
+    strB64 += strDict[parseInt(strBit6, 2)]
+  }
+  return strB64
+}
+
+export function b64ToHex(strB64) {
+  const strDict = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz#$'
+  let strBase2 = ''
+  for (let i = 0; i < strB64.length; i++) {
+    strBase2 = strBase2 + ('000000' + strDict.indexOf(strB64[i]).toString(2)).slice(-6)
+  }
+  console.log(strBase2)
+  while ((strBase2.length % 4) !== 0) {
+    strBase2 = '0' + strBase2
+  }
+  let strHex = ''
+  for (let i = 0; strBase2.length >= (i * 4 + 4); i++) {
+    const strBit6 = strBase2.slice(i * 4, i * 4 + 4)
+    strHex += strDict[parseInt(strBit6, 2)]
+  }
+  // remove left 0
+  while (strHex.length > 0 && strHex[0] === '0') {
+    strHex = strHex.replace('0', '')
+  }
+  return strHex
+}
